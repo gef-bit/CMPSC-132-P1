@@ -1,6 +1,18 @@
 from abc import ABC, abstractmethod
 
 class Product:
+    """
+    Represents a product in an inventory or store system.
+
+    The Product class provides the structure to define and manage information about a product.
+    The attributes include identifiers, pricing, and stock quantities. It also provides methods
+    to update the quantity and price, and retrieve product information.
+
+    :ivar product_id: A unique identifier for the product.
+    :ivar name: The name or title of the product.
+    :ivar price: The price of the product.
+    :ivar quantity: The number of units of the product available.
+    """
     def __init__(self, product_id, name, price, quantity=1):
         self.product_id = product_id
         self.name = name
@@ -14,26 +26,54 @@ class Product:
         return {'product_id':self.product_id,'name':self.name,'price':self.price,'quantity':self.quantity}
 class DigitalProduct(Product):
     def __init__(self, product_id, name, price, quantity, file_size, product_link):
+        """
+        DigitalProduct class represents a digital product with attributes specific to
+        digital goods along with general product attributes. It is a subclass of a
+        general Product class.
+
+        Attributes:
+            file_size: Size of the digital product file.
+            product_link: URL link to download or access the digital product.
+
+        :param product_id: Unique identifier for the product.
+        :type product_id: int
+        :param name: Name of the product.
+        :type name: str
+        :param price: Price of the product.
+        :type price: float
+        :param quantity: Available quantity of the product.
+        :type quantity: int
+        :param file_size: Size of the digital product file in MB.
+        :type file_size: float
+        :param product_link: URL to download or access the product.
+        :type product_link: str
+        """
         super().__init__(product_id, name, price, quantity)
         self.file_size = file_size
         self.product_link = product_link
     def get_product_info(self):
+        """
+        Returns detailed information about a product in the form of a dictionary. This
+        information includes the product's unique identifier, name, price, quantity
+        available, file size (if applicable), and product link.
+
+        :return: A dictionary containing product information.
+        :rtype: dict
+        """
         return {'product_id':self.product_id,'name':self.name,'price':self.price,'quantity':self.quantity,'file_size':self.file_size,'product_link':self.product_link}
 class PhysicalProduct(Product):
     """
-    Represents a physical product in the inventory system.
+    Represents a physical product in an inventory system.
 
-    This class extends the base Product class to include additional attributes and
-    functionality specific to physical products, such as weight, dimensions, and
-    shipping costs. It is designed to handle and represent products that are tangible
-    and require shipping.
+    This class extends the base `Product` class to incorporate additional attributes
+    specific to physical goods, such as weight, dimensions, and shipping cost. It allows
+    for tracking and managing physical inventory items and their associated details.
 
-    :ivar weight: The weight of the physical product in kilograms.
+    :ivar weight: The weight of the physical product.
     :type weight: float
-    :ivar dimensions: The dimensions of the physical product as a string (e.g.,
-        "10x20x30 cm").
-    :type dimensions: str
-    :ivar shipping_cost: The cost of shipping the physical product.
+    :ivar dimensions: The dimensions of the physical product in cm.
+    :type dimensions: tuple
+    :ivar shipping_cost: The shipping cost associated with the physical product.
     :type shipping_cost: float
     """
     def __init__(self, product_id, name, price, quantity, weight, dimensions, shipping_cost):
@@ -46,6 +86,18 @@ class PhysicalProduct(Product):
 
 
 class Cart:
+    """
+    Represents a shopping cart that manages items and calculates totals, while supporting
+    discounts.
+
+    The Cart class is designed to allow users to add and remove products, view a summary
+    of the cart's contents, and calculate the total price, including support for applying
+    discount strategies. It is internally equipped with methods for finding specific items
+    in the cart and applying discounts.
+
+    :ivar _cart_items: Internal list that stores the items in the cart.
+    :type _cart_items: list
+    """
     def __init__(self):
         self._cart_items = []
 
@@ -99,6 +151,23 @@ class Cart:
 
 
 class User:
+    """
+    Represents a user in the system.
+
+    This class provides functionalities to manage a user's shopping cart,
+    including adding and removing products, applying discounts, and checking
+    out. It ensures that each user has an associated cart and can calculate
+    the total purchase amount after applying any discounts.
+
+    :ivar user_id: Unique identifier of the user.
+    :type user_id: int
+    :ivar name: Name of the user.
+    :type name: str
+    :ivar cart: Shopping cart associated with the user.
+    :type cart: Cart
+    :ivar discounts: List of discounts applicable to the user during checkout.
+    :type discounts: list | None
+    """
     def __init__(self, user_id, name, cart=None, discounts=None):
         self.user_id = user_id
         self.name = name
@@ -117,6 +186,14 @@ class User:
 
 
 class Discount(ABC):
+    """
+    Represents an abstract class for applying discounts in a shopping system.
+
+    This class serves as a blueprint for creating specific types of discounts
+    that can be applied to a cart during checkout. It ensures that any subclass
+    implements the logic for calculating a discounted price based on the total
+    price and items in the cart.
+    """
     @abstractmethod
     def apply_discount(self, total_price, cart_items):
         """
@@ -128,14 +205,34 @@ class Discount(ABC):
         """
         pass
 class PercentageDiscount(Discount):
+    """
+    Represents a percentage-based discount.
+
+    This class calculates a discount by applying a specified percentage to the
+    total price. It is useful for scenarios where a percentage reduction needs
+    to be provided on the total value of items in a cart or order.
+
+    :ivar percentage: The discount percentage applied to the total price.
+    :type percentage: float
+    """
     def __init__(self, percentage):
         self.percentage = percentage
     def apply_discount(self, total_price, cart_items):
         return total_price * (1 - self.percentage / 100)
 class FixedAmountDiscount(Discount):
+    """
+    A discount strategy that deducts a fixed amount from the total price.
+
+    This class implements a discount mechanism where a specific, fixed
+    monetary amount is deducted from the total price of the items in the
+    customer's cart. If the result of the deduction would be negative, the
+    total price is set to zero to prevent invalid pricing values.
+
+    :ivar fixed_amount: The fixed monetary amount to be deducted as a discount.
+    :type fixed_amount: float
+    """
     def __init__(self, fixed_amount):
         self.fixed_amount = fixed_amount
-
     def apply_discount(self, total_price, cart_items):
         return max(0, total_price - self.fixed_amount)  # Ensure no negative totals.
 
@@ -161,14 +258,14 @@ def test_product_class():
 def test_digital_and_physical_product_classes():
     # Test DigitalProduct creation
     digital_product = DigitalProduct(
-        product_id=101, name="E-Book", price=12.99, quantity=1, file_size="5MB",
+        product_id=101, name="E-Book", price=12.99, quantity=1, file_size=5,
         product_link="www.example.com/download"
     )
     assert digital_product.product_id == 101, f"Expected product_id 101, got {digital_product.product_id}"
     assert digital_product.name == "E-Book", f"Expected name 'E-Book', got {digital_product.name}"
     assert digital_product.price == 12.99, f"Expected price 12.99, got {digital_product.price}"
     assert digital_product.quantity == 1, f"Expected quantity 1, got {digital_product.quantity}"
-    assert digital_product.file_size == "5MB", f"Expected file_size '5MB', got {digital_product.file_size}"
+    assert digital_product.file_size == 5, f"Expected file_size 5, got {digital_product.file_size}"
     assert digital_product.product_link == "www.example.com/download", f"Expected product_link 'www.example.com/download', got {digital_product.product_link}"
     print("DigitalProduct creation works correctly.")
 
@@ -179,7 +276,7 @@ def test_digital_and_physical_product_classes():
         "name": "E-Book",
         "price": 12.99,
         "quantity": 1,
-        "file_size": "5MB",
+        "file_size": 5,
         "product_link": "www.example.com/download"
     }
     assert digital_product_info == expected_digital_info, f"Expected {expected_digital_info}, got {digital_product_info}"
@@ -192,15 +289,15 @@ def test_digital_and_physical_product_classes():
         price=999.99,
         quantity=1,
         weight=2.5,
-        dimensions="15x10x1 inches",
+        dimensions=(15,10,2),
         shipping_cost=25.00,
     )
     assert physical_product.product_id == 202, f"Expected product_id 202, got {physical_product.product_id}"
     assert physical_product.name == "Laptop", f"Expected name 'Laptop', got {physical_product.name}"
     assert physical_product.price == 999.99, f"Expected price 999.99, got {physical_product.price}"
     assert physical_product.quantity == 1, f"Expected quantity 1, got {physical_product.quantity}"
-    assert physical_product.weight == 2.5, f"Expected weight '2.5kg', got {physical_product.weight}"
-    assert physical_product.dimensions == "15x10x1 inches", f"Expected dimensions '15x10x1 inches', got {physical_product.dimensions}"
+    assert physical_product.weight == 2.5, f"Expected weight '2.5 kg', got {physical_product.weight}"
+    assert physical_product.dimensions == (15,10,2), f"Expected dimensions (15,10,2), got {physical_product.dimensions}"
     assert physical_product.shipping_cost == 25.00, f"Expected shipping_cost 25.00, got {physical_product.shipping_cost}"
     print("PhysicalProduct creation works correctly.")
 
@@ -212,7 +309,7 @@ def test_digital_and_physical_product_classes():
         "price": 999.99,
         "quantity": 1,
         "weight": 2.5,
-        "dimensions": "15x10x1 inches",
+        "dimensions": (15,10,2),
         "shipping_cost": 25.00,
     }
     assert physical_product_info == expected_physical_info, f"Expected {expected_physical_info}, got {physical_product_info}"
@@ -346,11 +443,11 @@ if __name__ == "__main__":
 
     # Execution of Sample Scenario
     # 2 instances of DigitalProduct and 3 instances of PhysicalProduct
-    digital_product1 = DigitalProduct(product_id=1,name="E-Book",price=15.0,quantity=1,file_size="10MB",product_link="ebook.com")
-    digital_product2 = DigitalProduct(product_id=2,name="Online Course",price=50.0,quantity=1,file_size="1GB",product_link="course.com")
-    physical_product1 = PhysicalProduct(product_id=3,name="Laptop",price=1000.0,quantity=1,weight=2.5,dimensions="15x10x1 inches",shipping_cost=20.0)
-    physical_product2 = PhysicalProduct(product_id=4,name="Chair",price=150.0,quantity=1,weight=10.0,dimensions="30x30x40 inches",shipping_cost=50.0)
-    physical_product3 = PhysicalProduct(product_id=5,name="Desk",price=250.0,quantity=1,weight=15.0,dimensions="50x30x50 inches",shipping_cost=75.0)
+    digital_product1 = DigitalProduct(product_id=1,name="E-Book",price=15.0,quantity=1,file_size=10,product_link="ebook.com")
+    digital_product2 = DigitalProduct(product_id=2,name="Online Course",price=50.0,quantity=1,file_size=1024,product_link="course.com")
+    physical_product1 = PhysicalProduct(product_id=3,name="Laptop",price=1000.0,quantity=1,weight=2.5,dimensions=(15,10,1),shipping_cost=20.0)
+    physical_product2 = PhysicalProduct(product_id=4,name="Chair",price=150.0,quantity=1,weight=10.0,dimensions=(30,30,40),shipping_cost=50.0)
+    physical_product3 = PhysicalProduct(product_id=5,name="Desk",price=250.0,quantity=1,weight=15.0,dimensions=(50,30,50),shipping_cost=75.0)
 
     # Create 2 instances of the User class and add the digital products to the user1's cart and physical products to the user2’s cart
     user1 = User(user_id=1, name="Alice")
@@ -381,4 +478,3 @@ if __name__ == "__main__":
 
     # Verifying carts were emptied correctly after checkout
     print(user1.cart.view_cart(), user2.cart.view_cart())
-

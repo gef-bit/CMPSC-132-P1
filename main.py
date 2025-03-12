@@ -373,10 +373,12 @@ if __name__ == "__main__":
     # Applying discounts to carts
     print(f"Alice's Total Before Discount: ${user1.cart.calculate_total():,.2f}")
     print(f"Alice's Total After 10% Discount: ${user1.cart.calculate_total(discounts=[percentage_discount]):,.2f}")
+    user1.checkout()
 
     print(f"Bob's Total Before Discount: ${user2.cart.calculate_total():,.2f}")
     print(f"Bob's Total After $100 Discount: ${user2.cart.calculate_total(discounts=[fixed_amount_discount]):,.2f}")
+    user2.checkout()
 
-
-
+    # Verifying carts were emptied correctly after checkout
+    print(user1.cart.view_cart(), user2.cart.view_cart())
 
